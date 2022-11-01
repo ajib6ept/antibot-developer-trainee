@@ -1,0 +1,52 @@
+repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        exclude: "antibot/settings.py"
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+
+  - repo: https://github.com/dhruvmanila/remove-print-statements
+    rev: v0.5.0
+    hooks:
+      - id: remove-print-statements
+        args: ["--verbose"]
+
+  - repo: local
+    hooks:
+      - id: make-test
+        name: make-test
+        entry: make test
+        language: system
+        pass_filenames: false
+        always_run: true
+        verbose: true
+
+      - id: make-lint
+        name: make-lint
+        entry: make lint
+        language: system
+        pass_filenames: false
+        always_run: true
+        verbose: true
