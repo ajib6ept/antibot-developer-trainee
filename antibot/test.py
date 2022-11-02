@@ -1,9 +1,10 @@
-from django.test import Client, TestCase, override_settings
-from django.urls import reverse
-from django.core.cache import cache
-
 import time
 from http import HTTPStatus
+
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.test import Client, TestCase, override_settings
+from django.urls import reverse
 
 SUBNET1_IP1 = "123.45.67.89"
 SUBNET1_IP2 = "123.45.67.1"
@@ -19,6 +20,12 @@ class RateLimitTest(TestCase):
         self.client = Client()
         self.test_url = reverse("index")
         cache.clear()
+
+        self.user = User.objects.create_superuser(
+            username="foobar", email="foo@bar.com", password="barbaz"
+        )
+        self.client_adm = Client()
+        self.client_adm.force_login(user=self.user)
 
     def tearDown(self):
         cache.clear()
@@ -46,7 +53,6 @@ class RateLimitTest(TestCase):
             resp = self.client.get(
                 self.test_url, **{"HTTP_X_FORWARDED_FOR": SUBNET1_IP2}
             )
-            print(resp.status_code)
             assert resp.status_code == HTTPStatus.OK
 
         resp = self.client.get(
@@ -71,6 +77,10 @@ class RateLimitTest(TestCase):
 
     @override_settings(RATELIMIT_LIMIT="1/m", RATELIMIT_BLOCK="3s")
     def test_ban_time(self):
+        """
+        после получения 429 ошибки ждем время блокировки и повторное пробуем
+        """
+
         resp = self.client.get(
             self.test_url, **{"HTTP_X_FORWARDED_FOR": SUBNET1_IP1}
         )
@@ -86,4 +96,29 @@ class RateLimitTest(TestCase):
         resp = self.client.get(
             self.test_url, **{"HTTP_X_FORWARDED_FOR": SUBNET1_IP2}
         )
+        assert resp.status_code == HTTPStatus.OK
+
+    @override_settings(RATELIMIT_LIMIT="1/m", RATELIMIT_BLOCK="3s")
+    def test_test_rate_limit(self):
+        """
+        после получения 429 ошибки сбрасываем лимит и повторное пробуем
+        """
+
+        resp = self.client.get(
+            self.test_url, **{"HTTP_X_FORWARDED_FOR": SUBNET1_IP1}
+        )
+        assert resp.status_code == HTTPStatus.OK
+
+        resp = self.client.get(
+            self.test_url, **{"HTTP_X_FORWARDED_FOR": SUBNET1_IP2}
+        )
+        assert resp.status_code == HTTPStatus.TOO_MANY_REQUESTS
+
+        resp = self.client_adm.delete(self.test_url)
+        assert resp.status_code == HTTPStatus.OK
+
+        resp = self.client.get(
+            self.test_url, **{"HTTP_X_FORWARDED_FOR": SUBNET1_IP2}
+        )
+
         assert resp.status_code == HTTPStatus.OK

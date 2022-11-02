@@ -29,22 +29,20 @@ class RatelimitMiddleware:
 
     def __call__(self, request):
 
-        try:
-            ipv4_mask = settings.RATELIMIT_IPV4_MASK
-            limit = settings.RATELIMIT_LIMIT
-            block = settings.RATELIMIT_BLOCK
-            pref = settings.RATELIMIT_CACHE_PREFIX
-        except AttributeError:
-            pass
-        try:
-            block_time = int(block[:-1]) * _TIME_SETTINGS[block[-1]]
-            limit_req = int(limit.split("/")[0])
-            limit_ttl = _TIME_SETTINGS[limit.split("/")[1]]
-        except IndexError:
-            pass
+        ipv4_mask = getattr(settings, "RATELIMIT_IPV4_MASK", 24)
+        limit = getattr(settings, "RATELIMIT_LIMIT", "100/m")
+        block = getattr(settings, "RATELIMIT_BLOCK", "2m")
+        pref = getattr(settings, "RATELIMIT_CACHE_PREFIX", "RLCP:")
+
+        block_time = int(block[:-1]) * _TIME_SETTINGS[block[-1]]
+        limit_req = int(limit.split("/")[0])
+        limit_ttl = _TIME_SETTINGS[limit.split("/")[1]]
 
         subnet = get_subnet_from_headers(request, ipv4_mask)
         key = pref + subnet
+
+        if request.user.is_superuser and request.method == "DELETE":
+            self.reset_all_rate_limits(cache, key)
 
         if cache.get(f"{key}+ban"):
             return HttpResponse(status=429)
@@ -57,3 +55,6 @@ class RatelimitMiddleware:
             cache.set(f"{key}+ban", value=1, timeout=block_time)
 
         return self.get_response(request)
+
+    def reset_all_rate_limits(self, cache, key):
+        cache.clear()
