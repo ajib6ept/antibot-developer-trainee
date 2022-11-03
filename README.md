@@ -3,7 +3,7 @@
 Необходимо создать HTTP-сервис, способный ограничивать количество запросов (rate limit) из одной подсети IPv4. Если ограничения отсутствуют, то нужно выдавать одинаковый статический контент.
 
 ### Tests and linter status:
-[![Actions Status](https://github.com/ajib6ept/mediasoft-httpservice/workflows/check-code/badge.svg)](https://github.com/ajib6ept/mediasoft-httpservice/actions)
+[![Actions Status](https://github.com/ajib6ept/antibot-developer-trainee/workflows/check-code/badge.svg)](https://github.com/ajib6ept/antibot-developer-trainee/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/1192252f3a36d4862172/maintainability)](https://codeclimate.com/github/ajib6ept/antibot-developer-trainee/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/1192252f3a36d4862172/test_coverage)](https://codeclimate.com/github/ajib6ept/antibot-developer-trainee/test_coverage)
 ***
