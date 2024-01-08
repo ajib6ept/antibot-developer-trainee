@@ -5,19 +5,19 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.13.2
     hooks:
       - id: isort
         name: isort (python)
 
   - repo: https://github.com/pycqa/flake8
-    rev: 4.0.1
+    rev: 7.0.0
     hooks:
       - id: flake8
         exclude: "antibot/settings.py"
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v4.5.0
     hooks:
       - id: check-ast
       - id: check-builtin-literals
@@ -28,7 +28,7 @@ repos:
       - id: mixed-line-ending
 
   - repo: https://github.com/dhruvmanila/remove-print-statements
-    rev: v0.5.0
+    rev: v0.5.2
     hooks:
       - id: remove-print-statements
         args: ["--verbose"]
